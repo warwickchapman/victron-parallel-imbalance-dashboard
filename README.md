@@ -1,4 +1,4 @@
-# Currently Amped · Victron Parallel Imbalance Dashboard
+# Victron Parallel Imbalance Dashboard
 
 **One Node-RED import for live inverter load, parallel balance, and load history.**
 
