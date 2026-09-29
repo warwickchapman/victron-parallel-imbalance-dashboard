@@ -6,11 +6,13 @@ All notable changes to this dashboard. Format loosely follows
 ## Unreleased
 
 ### Changed
-- Simplified the repository to one deployable JSON. The current dashboard already includes
-  per-unit histogram bars, Parallel Balance tables, and 60-minute Load History graphs, so
-  the separate older histogram import was redundant and has been removed.
-- Added a Load History screenshot and updated the README to show both views and their paths.
-- Removed the screenshot of the older load view. The current Node-RED flow itself is unchanged.
+- Kept one deployable JSON because it already includes the per-unit histogram bars,
+  Parallel Balance tables, and 60-minute Load History graphs. The older separate import
+  was removed.
+- Reduced the repository to the flow, README, changelog, and one current screenshot.
+  Removed the separate build sources and second screenshot; future flow changes should
+  be exported from Node-RED to the JSON file.
+- The dashboard's runtime flow is unchanged by this repository cleanup.
 
 ## [2.1.0] — 2026-09-29
 

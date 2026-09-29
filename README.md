@@ -4,7 +4,7 @@
 
 A phase total can hide an inverter that is working much harder than its neighbours. This dashboard shows each parallel VE.Bus inverter/charger's AC input and output power, grouped by phase, to help with commissioning and troubleshooting. Warren's current version combines the per-unit histogram bars with 60-minute time-series graphs, voltage readings, and imbalance alerts.
 
-![Inverter Load dashboard showing per-unit bars, phase voltages, and an imbalance warning](./docs/images/inverter-load.jpg)
+![Inverter Load dashboard showing per-unit bars, phase voltages, and an imbalance warning](./screenshot.jpg)
 
 *Inverter Load view from a 12-unit, three-phase example. Unit count and likely phase layout are discovered from MQTT data.*
 
@@ -18,7 +18,7 @@ Import [`victron-parallel-imbalance.json`](./victron-parallel-imbalance.json) on
 | **Parallel Balance** | `/dashboard/pb` | Individual power readings and balance figures grouped by phase. |
 | **Load History** | `/dashboard/page2` | Rolling 60-minute time-series graphs of each unit's AC input and output power. |
 
-On the [Load History screenshot](./docs/images/load-history.png), each line is one inverter on its phase. The earlier separate histogram import is no longer needed because this file includes both views.
+The same import supplies the load bars and the time-series graphs; no second flow is needed.
 
 ## Install or update
 
@@ -44,24 +44,19 @@ If per-unit voltage is unavailable, the display can fall back to the phase volta
 
 Histogram bar height is each unit's power as a percentage of its configured or estimated rating. Colour shows how hard a unit is working relative to others on its phase. The balance figure compares the least-loaded and most-loaded units; a lower figure means less even sharing. Load History lets you see whether that difference persists over time.
 
-The alert banner highlights uneven sharing, phase-voltage imbalance, and per-unit voltage deviation. Thresholds are near the top of [`src/load_fn.js`](./src/load_fn.js). An alert is a prompt to investigate, **not proof of a wiring or inverter fault**. Compare readings under a meaningful load and follow safe electrical inspection practice before changing connections.
+The alert banner highlights uneven sharing, phase-voltage imbalance, and per-unit voltage deviation. Thresholds are near the top of the **Build load % bars** function node in Node-RED. An alert is a prompt to investigate, **not proof of a wiring or inverter fault**. Compare readings under a meaningful load and follow safe electrical inspection practice before changing connections.
 
 The MQTT power topics do not identify each device's phase. Automatic detection assumes contiguous, interleaved VE.Bus device numbers starting at zero. A single-phase installation with 3, 6, 9, or more units can look three-phase to this detector. If the layout is wrong, set `AUTO_PHASE_MODE` to `"single"` or `"three"` in the relevant function nodes.
 
-## Source and files
-
-The import is generated from the checked-in source with plain Node.js:
-
-```sh
-node build.js
-```
+## Files
 
 | File | Purpose |
 | --- | --- |
 | [`victron-parallel-imbalance.json`](./victron-parallel-imbalance.json) | The complete Node-RED import, including histograms and 60-minute time-series graphs. |
-| [`docs/images/inverter-load.jpg`](./docs/images/inverter-load.jpg) | Inverter Load screenshot. |
-| [`docs/images/load-history.png`](./docs/images/load-history.png) | Load History screenshot. |
-| [`build.js`](./build.js) and [`src/`](./src/README.md) | Editable source and build script for the import. |
+| [`screenshot.jpg`](./screenshot.jpg) | Example Inverter Load view shown above. |
+| [`README.md`](./README.md) | Features, setup, and reading guide. |
 | [`CHANGELOG.md`](./CHANGELOG.md) | Human-readable version history. |
+
+After changing the flow in Node-RED, export the updated flow to the JSON file and record user-facing changes in the changelog.
 
 Original parallel imbalance flow by Frank and Warwick; dashboard extension and dark theme by Currently Amped.
