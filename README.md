@@ -11,11 +11,15 @@
 | Import file | Use it for |
 | --- | --- |
 | **[Latest dashboard](./victron-parallel-imbalance.json)** | The current three-page dashboard, including voltage readings and imbalance alerts. |
-| [Histogram dashboard](./victron-parallel-imbalance-histogram.json) | The separate, self-contained **Inverter Load %** page with per-unit AC input and output bars. [View its screenshot](./screenshot-zw.jpeg). |
+| [Histogram dashboard](./victron-parallel-imbalance-histogram.json) | The pre-Warren jazz-up version: per-unit load histograms, balance tables, and 60-minute time-series graphs. |
 
-Both files are complete Node-RED imports. They share the MQTT broker, dashboard base, theme IDs, and `/dashboard/load` path, so **use one version at a time**. When changing versions, review Node-RED's import choices and remove the other version's page and flow to avoid a duplicate load page.
+Both files are complete three-page Node-RED imports. They reuse the same node IDs and dashboard paths, so **import one version at a time**. Updating from the histogram version to the latest version replaces the matching nodes and adds two voltage MQTT inputs; review Node-RED's import choices before deploying.
 
-The histogram import has its own **All unit AC power** MQTT input fixed to VE.Bus instance `276`. Set it to your instance (or use `+`) and set `RATED_W_PER_UNIT` in its **Build load % bars** function for accurate percentages.
+### Histogram version
+
+This is the dashboard from before Warren's later visual and voltage-alert work. It shows each inverter's AC input and output load as vertical bars on **Inverter Load %** (`/dashboard/load`), with **Parallel Balance** tables (`/dashboard/pb`) and a rolling 60-minute **Load History** time-series page (`/dashboard/page2`). [See the histogram screenshot](./screenshot-zw.jpeg). It does not include the latest voltage readouts or alert banner.
+
+For this import, the **Parallel Balance** MQTT input is fixed to VE.Bus instance `276`; change it to your instance or use `+`. The Inverter Load input already uses a wildcard. Set `RATED_W_PER_UNIT` in **Build load % bars** for accurate percentages; **Load History** has a separate rating setting for graph scaling.
 
 ## What the latest dashboard shows
 
@@ -61,6 +65,17 @@ The latest import is generated from the checked-in source with plain Node.js:
 node build.js
 ```
 
-This writes [`victron-parallel-imbalance.json`](./victron-parallel-imbalance.json). The [`src/`](./src/README.md) directory holds the functions, dashboard template, and original flow used by the builder. The standalone histogram JSON is not changed by a rebuild. See the [changelog](./CHANGELOG.md) for the version history.
+This writes [`victron-parallel-imbalance.json`](./victron-parallel-imbalance.json). The [`src/`](./src/README.md) directory holds the functions, dashboard template, and original flow used by the builder. The standalone histogram JSON is a preserved historical import and is not changed by a rebuild. See the [changelog](./CHANGELOG.md) for the version history.
+
+## Files
+
+| File | Purpose |
+| --- | --- |
+| [`victron-parallel-imbalance.json`](./victron-parallel-imbalance.json) | Latest three-page Node-RED import. |
+| [`victron-parallel-imbalance-histogram.json`](./victron-parallel-imbalance-histogram.json) | Pre-Warren three-page import with per-unit histograms and 60-minute time-series data. |
+| [`docs/images/inverter-load.jpg`](./docs/images/inverter-load.jpg) | Latest dashboard screenshot shown above. |
+| [`screenshot-zw.jpeg`](./screenshot-zw.jpeg) | Histogram-version screenshot. |
+| [`build.js`](./build.js) and [`src/`](./src/README.md) | Sources and build script for the latest import. |
+| [`CHANGELOG.md`](./CHANGELOG.md) | Human-readable version history. |
 
 Original parallel imbalance flow by Frank and Warwick; dashboard extension and dark theme by Currently Amped.

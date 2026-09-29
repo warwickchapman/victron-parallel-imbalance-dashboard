@@ -3,6 +3,15 @@
 All notable changes to this dashboard. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions are the dashboard package.
 
+## Unreleased
+
+### Corrected
+- Restored the standalone histogram import to the pre-Warren three-page flow. It includes
+  per-unit load bars, Parallel Balance tables, and 60-minute Load History graphs; the
+  previously listed one-page import did not contain time-series data.
+- Updated the README's version descriptions and file listing to distinguish the histogram
+  import from the latest voltage-aware dashboard.
+
 ## [2.1.0] — 2026-09-29
 
 ### Added
