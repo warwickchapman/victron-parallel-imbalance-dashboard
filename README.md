@@ -57,6 +57,4 @@ The MQTT power topics do not identify each device's phase. Automatic detection a
 | [`README.md`](./README.md) | Features, setup, and reading guide. |
 | [`CHANGELOG.md`](./CHANGELOG.md) | Human-readable version history. |
 
-After changing the flow in Node-RED, export the updated flow to the JSON file and record user-facing changes in the changelog.
-
 Original parallel imbalance flow by Frank and Warwick; dashboard extension and dark theme by Currently Amped.
