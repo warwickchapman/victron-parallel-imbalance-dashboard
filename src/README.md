@@ -6,4 +6,3 @@
 - `original-flow.json` — the original `parallel imbalance` flow (merged and re-skinned by `../build.js`).
 
 From the repo root, run `node build.js` to regenerate `victron-parallel-imbalance.json`.
-The standalone `victron-parallel-imbalance-histogram.json` is not generated from these sources.

@@ -5,12 +5,12 @@ All notable changes to this dashboard. Format loosely follows
 
 ## Unreleased
 
-### Corrected
-- Restored the standalone histogram import to the pre-Warren three-page flow. It includes
-  per-unit load bars, Parallel Balance tables, and 60-minute Load History graphs; the
-  previously listed one-page import did not contain time-series data.
-- Updated the README's version descriptions and file listing to distinguish the histogram
-  import from the latest voltage-aware dashboard.
+### Changed
+- Simplified the repository to one deployable JSON. The current dashboard already includes
+  per-unit histogram bars, Parallel Balance tables, and 60-minute Load History graphs, so
+  the separate older histogram import was redundant and has been removed.
+- Added a Load History screenshot and updated the README to show both views and their paths.
+- Removed the screenshot of the older load view. The current Node-RED flow itself is unchanged.
 
 ## [2.1.0] — 2026-09-29
 
@@ -25,8 +25,8 @@ All notable changes to this dashboard. Format loosely follows
 ### Changed
 - Per-phase layout: **PHASE LOAD gauge on the left**, bars centre, **per-unit readout list on the right**.
 - **Enlarged unit fonts** for wall-display legibility.
-- The repository's primary import now contains this version. The earlier histogram dashboard
-  remains available as a separate, self-contained JSON import.
+- The repository's primary import contains all three pages, including the histogram view
+  and the 60-minute Load History graphs.
 
 ### Removed
 - **Battery (DC-bus) voltage** tile and its MQTT subscription.
