@@ -1,60 +1,103 @@
-# Victron Parallel Imbalance Dashboard
+# Victron Parallel Imbalance Dashboard (web dashboard only)
 
-**One Node-RED import for live inverter load, parallel balance, and load history.**
+A FlowFuse Dashboard 2.0 (Node-RED, Venus OS Large) for monitoring **parallel Victron VE.Bus
+inverter/charger systems** — per-unit load sharing, current-sharing balance, AC output
+voltages, and live imbalance alerting, in the Currently Amped dark theme.
 
-A phase total can hide an inverter that is working much harder than its neighbours. This dashboard shows each parallel VE.Bus inverter/charger's AC input and output power, grouped by phase, to help with commissioning and troubleshooting. Warren's current version combines the per-unit histogram bars with 60-minute time-series graphs, voltage readings, and imbalance alerts.
+**This package is the web dashboard only.** It does **not** touch the Venus OS GUI / GX Touch
+screen — it adds no QML, no root changes, nothing to the device firmware. Everything runs
+inside Node-RED and is viewed in a browser (LAN or VRM) or on a networked wall tablet. Safe to
+deploy on client systems; nothing here is affected by Venus OS firmware updates.
 
-![Inverter Load dashboard showing per-unit bars, phase voltages, and an imbalance warning](./screenshot.jpg)
+![Dashboard](screenshot.jpg)
 
-*Inverter Load view from a 12-unit, three-phase example. Unit count and likely phase layout are discovered from MQTT data.*
+---
 
-## One import, three views
+## What it shows
 
-Import [`victron-parallel-imbalance.json`](./victron-parallel-imbalance.json) once. It contains all three pages:
+Importing the flow adds/updates three pages on the **"My Dashboard"** base:
 
-| Page | Path | What it shows |
-| --- | --- | --- |
-| **Inverter Load %** | `/dashboard/load` | Per-unit AC input and output histograms, phase load gauges, load-sharing balance, available AC output voltages, and an alert banner. |
-| **Parallel Balance** | `/dashboard/pb` | Individual power readings and balance figures grouped by phase. |
-| **Load History** | `/dashboard/page2` | Rolling 60-minute time-series graphs of each unit's AC input and output power. |
+| Page | Path | Description |
+|------|------|-------------|
+| **Inverter Load %** | `/load` | Per-unit load bars, phase gauges, balance, voltages, alerts |
+| **Parallel Balance** | `/pb` | Per-unit AC in/out tables with balance colour cells |
+| **Load History** | `/page2` | Per-unit load line graphs with a 1–60 s sample-rate slider (auto-ranging) |
 
-The same import supplies the load bars and the time-series graphs; no second flow is needed.
+### Highlights
+- **Light / Dark / Auto appearance** — Auto follows each viewer's device; Light/Dark can be forced.
+- **Per-unit load bars** as a percentage of each unit's configured maximum, grouped by phase.
+- **Imbalance heat gradient** — green (lightest) → red (hardest), scaled by the real spread, with a **▲ hardest** flag per phase.
+- **Current-sharing balance** per phase (lowest ÷ highest) on **Output and Input**, plus a **Worst Balance** tile.
+- **Per-unit AC output voltage** with **loose-connection detection** (a unit drifting from its phase-siblings is flagged for a "check connection / retorque").
+- **Imbalance alert banner** — fires on current-sharing, phase-voltage, or per-unit-voltage imbalance.
+- **Sample-rate slider** (1–60 s) on the Load History page, with **Reset to 1 / min**; the window auto-shortens at fast rates to protect memory.
+- **Automatic detection** — unit count, phase configuration and portal/instance come from the original flow; **per-unit rating** detection is added here, and the graphs auto-range to it.
 
-## Install or update
+---
 
-You need Node-RED with **FlowFuse Dashboard 2.0** and access to the installation's Victron MQTT power topics.
+## Install
 
-1. In Node-RED, choose **Menu → Import** and select [`victron-parallel-imbalance.json`](./victron-parallel-imbalance.json). If updating an older import, review the matching nodes that Node-RED offers to replace.
-2. Check the imported MQTT broker. It defaults to `localhost:1883`; change it if your broker runs elsewhere.
-3. In the **Parallel Balance** flow, edit **All unit AC power**. Its imported topic is fixed to VE.Bus instance `276`: `N/+/vebus/276/Devices/+/Ac/+/P`. Change the instance for your system, or use `N/+/vebus/+/Devices/+/Ac/+/P`. The Inverter Load flow already uses the wildcard.
-4. Set `RATED_W_PER_UNIT` in **Build load % bars** to the continuous output rating of one inverter, in watts. Use `RATED_W_OVERRIDES` if ratings differ. The default `0` estimates a rating from observed peaks, so percentages may be wrong until enough load has been seen. **Load History** has its own `RATED_W_PER_UNIT` setting for graph scaling.
-5. **Deploy** and open the pages listed above. The imported dashboard base path is `/dashboard`.
+1. In Node-RED: **menu → Import**.
+2. Select **`victron-parallel-imbalance.json`**.
+3. **Import → Deploy.**
 
-The combined flow uses these MQTT topic families:
+The flow reuses the original node IDs, so Node-RED offers to **replace** the existing Parallel
+Balance nodes — this is intended and yields one unified dashboard. Let it replace (don't choose
+"import a copy"), or you may end up with duplicate pages sharing the same URL.
 
-```text
-N/+/vebus/+/Devices/+/Ac/+/P    per-unit AC input and output power
-N/+/vebus/+/Ac/Out/+/V          phase AC output voltage
-N/+/vebus/+/Devices/+/Ac/+/V    per-unit AC output voltage, when published
-```
+**MQTT** is expected on `localhost:1883` (the GX/Venus OS broker). Topics:
 
-If per-unit voltage is unavailable, the display can fall back to the phase voltage. A per-unit voltage-deviation alert needs real per-unit readings; a shared phase value cannot reveal differences between units.
+| Topic | Purpose |
+|-------|---------|
+| `N/+/vebus/+/Devices/+/Ac/+/P` | Per-unit AC in/out power |
+| `N/+/vebus/+/Ac/Out/+/V` | Phase AC output voltage |
+| `N/+/vebus/+/Devices/+/Ac/+/V` | Per-unit AC output voltage (if published) |
 
-## Reading the display
+Instance is auto-detected on the Inverter Load page.
 
-Histogram bar height is each unit's power as a percentage of its configured or estimated rating. Colour shows how hard a unit is working relative to others on its phase. The balance figure compares the least-loaded and most-loaded units; a lower figure means less even sharing. Load History lets you see whether that difference persists over time.
+---
 
-The alert banner highlights uneven sharing, phase-voltage imbalance, and per-unit voltage deviation. Thresholds are near the top of the **Build load % bars** function node in Node-RED. An alert is a prompt to investigate, **not proof of a wiring or inverter fault**. Compare readings under a meaningful load and follow safe electrical inspection practice before changing connections.
+## Configuration
 
-The MQTT power topics do not identify each device's phase. Automatic detection assumes contiguous, interleaved VE.Bus device numbers starting at zero. A single-phase installation with 3, 6, 9, or more units can look three-phase to this detector. If the layout is wrong, set `AUTO_PHASE_MODE` to `"single"` or `"three"` in the relevant function nodes.
+Key settings live at the top of the **Build load % bars** function (edit in Node-RED):
 
-## Files
+| Setting | Default | Purpose |
+|---------|---------|---------|
+| `RATED_W_PER_UNIT` | `0` (auto) | Per-unit rating; `0` auto-detects, or set e.g. `20000` to pin |
+| `DIRECTION_MODE` | `"both"` | `"out"`, `"in"`, or `"both"` |
+| `BAR_COLOUR_MODE` | `"severity"` | `"severity"` heat, or `"phase"` solid colour |
+| `SPREAD_FULL_RATIO` | `0.25` | Phase spread treated as "fully severe" |
+| `BAL_WARN_PCT` / `BAL_CRIT_PCT` | `85` / `78` | Current-sharing alert thresholds |
+| `VOLT_WARN_PCT` / `VOLT_CRIT_PCT` | `2.0` / `4.0` | Phase voltage-imbalance thresholds |
+| `UNIT_V_WARN` / `UNIT_V_CRIT` | `1.5` / `3.0` V | Per-unit voltage-deviation (loose-connection) thresholds |
+| `PHASE_COLOURS` | amber/green/blue | Per-phase badge/gauge colours |
 
-| File | Purpose |
-| --- | --- |
-| [`victron-parallel-imbalance.json`](./victron-parallel-imbalance.json) | The complete Node-RED import, including histograms and 60-minute time-series graphs. |
-| [`screenshot.jpg`](./screenshot.jpg) | Example Inverter Load view shown above. |
-| [`README.md`](./README.md) | Features, setup, and reading guide. |
-| [`CHANGELOG.md`](./CHANGELOG.md) | Human-readable version history. |
+---
 
-Original parallel imbalance flow by Frank and Warwick; dashboard extension and dark theme by Currently Amped.
+## Experimental: native GX Touch add-on (unsupported)
+
+The `gx-touch/` folder holds **optional, experimental** QML pages that render the imbalance
+view **natively on the GX Touch / HDMI screen** — one for the classic **gui-v1** and one for
+the current **gui-v2** (which follows the GX's own light/dark setting). They're there to
+experiment with, **not** for client sites.
+
+> ⚠️ **Caution.** Modifying the Venus OS GUI is **not supported by Victron** and is
+> **wiped by firmware updates**. gui-v2 is a *built* app, so its page is added by building
+> gui-v2 from source or via a gui-v2 mod package, not by dropping a file in. Deploy only via a
+> SetupHelper-style package (so it re-applies after updates) and **test on a bench GX first** —
+> a bad GUI edit can leave the screen unusable until you SSH in. The QML follows current
+> conventions but must be **compiled/tested against your Venus OS version**. For anything
+> client-facing, use the web dashboard above — it works on both GUI versions and survives updates.
+
+See `gx-touch/README.md`, `gx-touch/gui-v1/README.md` and `gx-touch/gui-v2/README.md` for details.
+
+## Credits
+
+This dashboard is **based on the original "parallel imbalance" Node-RED flow** — the
+current-sharing / balance calculation, the automatic unit-count and phase detection, and the
+load history originate from that earlier work and remain the work of its author(s), built on
+here with thanks. The dark theme, the Inverter Load page (load bars, heat gradient, balance
+pills, voltages and loose-connection detection, alerts, and per-unit rating auto-detection) and
+the packaging are by **Currently Amped** (Harare, Zimbabwe).
+
+If you are an original author and would like your credit shown differently, please let us know.
